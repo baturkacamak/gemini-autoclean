@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gemini-autoclean"
+version = "0.1.0"
+description = "Cross-platform Gemini image auto-clean watcher powered by GeminiWatermarkTool"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Codex" }]
+license = { text = "MIT" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS :: MacOS X",
+]
+
+[project.scripts]
+gemini-autoclean = "gemini_autoclean.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
