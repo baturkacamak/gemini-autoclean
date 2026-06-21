@@ -8,14 +8,21 @@ version = "0.1.0"
 description = "Cross-platform Gemini image auto-clean watcher powered by GeminiWatermarkTool"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "Codex" }]
+authors = [{ name = "Batuhan Acamak" }]
 license = { text = "MIT" }
+keywords = ["gemini", "watermark", "watcher", "downloads", "automation"]
 classifiers = [
   "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Operating System :: MacOS :: MacOS X",
 ]
+
+[project.urls]
+Homepage = "https://github.com/baturkacamak/gemini-autoclean"
+Repository = "https://github.com/baturkacamak/gemini-autoclean"
+Issues = "https://github.com/baturkacamak/gemini-autoclean/issues"
 
 [project.scripts]
 gemini-autoclean = "gemini_autoclean.cli:main"
