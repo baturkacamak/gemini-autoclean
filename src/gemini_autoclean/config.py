@@ -17,7 +17,7 @@ class AppConfig:
     poll_seconds: int = 4
     settle_checks: int = 3
     settle_delay_ms: int = 1500
-    remove_original: bool = True
+    remove_original: bool = False
     force_mode: bool = True
     tool_path: str = ""
     log_path: str = ""

@@ -59,15 +59,19 @@ Default behavior:
 - or multiple watched directories if you configure more than one source
 - clean target: `Downloads/Gemini`
 - filename pattern: `Gemini_Generated_Image_*`
+- original file: kept by default
 
 ## Common commands
 
 ```bash
 gemini-autoclean setup --source ~/Downloads --target ~/Downloads/Gemini
 gemini-autoclean setup --source ~/Downloads --source /mnt/archive/Downloads --target ~/Downloads/Gemini
+gemini-autoclean setup --remove-original
 gemini-autoclean setup --pattern Gemini_Generated_Image_* --pattern My_Custom_Prefix_*
 gemini-autoclean install-tool
 gemini-autoclean install-service
+gemini-autoclean update-config --keep-original
+gemini-autoclean update-config --remove-original
 gemini-autoclean update-config --pattern Another_Prefix_*
 gemini-autoclean update-config --source G:\DOWNLOADS --source C:\Users\me\Downloads
 gemini-autoclean watch --once
@@ -109,6 +113,7 @@ Main fields:
 
 - Filename matching is intentional. Matching files are processed directly.
 - The default target folder is `Downloads/Gemini`.
+- By default the watcher keeps the original file. You can switch this with `--remove-original`.
 - The watcher is designed for Gemini-style generated image filenames first; users can add more patterns if needed.
 - This project automates a local tool. It does not use any external inference service.
 - By default, the package checks once every 24 hours whether `GeminiWatermarkTool` has a newer GitHub release and updates it automatically.

@@ -21,6 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     setup_parser.add_argument("--target")
     setup_parser.add_argument("--pattern", action="append", dest="patterns")
     setup_parser.add_argument("--no-service", action="store_true")
+    add_original_file_args(setup_parser)
 
     tool_parser = subparsers.add_parser("install-tool", help="Download and install GeminiWatermarkTool")
     tool_parser.add_argument("--source", action="append", dest="sources")
@@ -33,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     update_parser.add_argument("--source", action="append", dest="sources")
     update_parser.add_argument("--target")
     update_parser.add_argument("--pattern", action="append", dest="patterns")
+    add_original_file_args(update_parser)
 
     watch_parser = subparsers.add_parser("watch", help="Run the watcher")
     watch_parser.add_argument("--once", action="store_true")
@@ -43,8 +45,25 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def add_original_file_args(parser: argparse.ArgumentParser) -> None:
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--remove-original",
+        action="store_true",
+        dest="remove_original",
+        help="Delete the original file after a successful clean",
+    )
+    group.add_argument(
+        "--keep-original",
+        action="store_false",
+        dest="remove_original",
+        help="Keep the original file after a successful clean",
+    )
+    parser.set_defaults(remove_original=None)
+
+
 def cmd_setup(args: argparse.Namespace) -> int:
-    config = setup_install(args.sources, args.target, args.patterns)
+    config = setup_install(args.sources, args.target, args.patterns, args.remove_original)
     if not args.no_service:
         launcher = install_autostart()
         print(f"Autostart installed: {launcher}")
@@ -56,6 +75,7 @@ def cmd_setup(args: argparse.Namespace) -> int:
     print(f"Watch sources: {', '.join(config.source_dirs)}")
     print(f"Clean target: {config.target_dir}")
     print(f"Patterns: {', '.join(config.patterns)}")
+    print(f"Remove original: {config.remove_original}")
     if current_os() != "windows" and str(user_bin_dir()) not in subprocess.getoutput("echo $PATH"):
         print(f"Note: add {user_bin_dir()} to PATH if GeminiWatermarkTool is not directly callable.")
     return 0
@@ -96,10 +116,12 @@ def cmd_update_config(args: argparse.Namespace) -> int:
             **source_overrides,
             "target_dir": args.target,
             "patterns": args.patterns,
+            "remove_original": args.remove_original,
         }
     )
     print(f"Updated config: {', '.join(config.source_dirs)} -> {config.target_dir}")
     print(f"Patterns: {', '.join(config.patterns)}")
+    print(f"Remove original: {config.remove_original}")
     return 0
 
 

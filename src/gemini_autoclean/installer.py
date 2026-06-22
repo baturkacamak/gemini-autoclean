@@ -177,7 +177,12 @@ def ensure_python_invocation() -> str:
     return sys.executable
 
 
-def setup_install(source_dirs: list[str] | None, target_dir: str | None, patterns: list[str] | None) -> AppConfig:
+def setup_install(
+    source_dirs: list[str] | None,
+    target_dir: str | None,
+    patterns: list[str] | None,
+    remove_original: bool | None,
+) -> AppConfig:
     overrides = {}
     if source_dirs:
         overrides["source_dir"] = source_dirs[0]
@@ -186,6 +191,8 @@ def setup_install(source_dirs: list[str] | None, target_dir: str | None, pattern
         overrides["target_dir"] = target_dir
     if patterns:
         overrides["patterns"] = patterns
+    if remove_original is not None:
+        overrides["remove_original"] = remove_original
     config = ensure_config(overrides)
     ensure_tool_installed(config)
     return config
