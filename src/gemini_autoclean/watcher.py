@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 from .config import AppConfig, load_config
+from .installer import ensure_tool_installed
 
 
 class Watcher:
@@ -93,6 +94,15 @@ class Watcher:
 
 
 def run_watcher(once: bool = False) -> None:
+    config = load_config()
+    watcher = Watcher(config)
+    try:
+        ensure_tool_installed(config, allow_update_check=True)
+    except Exception as exc:  # noqa: BLE001
+        if Path(config.tool_path).exists():
+            watcher.log(f"Tool update check failed, continuing with installed version: {exc}")
+        else:
+            raise
     watcher = Watcher(load_config())
     if once:
         watcher.scan_once()

@@ -11,6 +11,7 @@
 - Matches files by configurable filename patterns such as `Gemini_Generated_Image_*`
 - Removes the original file after a successful clean
 - Installs autostart on Windows, Linux, and macOS
+- Checks for new `GeminiWatermarkTool` releases automatically and updates on schedule
 
 ## Install
 
@@ -89,6 +90,10 @@ Main fields:
 - `force_mode`
 - `tool_path`
 - `log_path`
+- `auto_update_tool`
+- `update_check_interval_hours`
+- `last_tool_update_check`
+- `installed_tool_version`
 
 ## Autostart
 
@@ -102,3 +107,4 @@ Main fields:
 - The default target folder is `Downloads/Gemini`.
 - The watcher is designed for Gemini-style generated image filenames first; users can add more patterns if needed.
 - This project automates a local tool. It does not use any external inference service.
+- By default, the package checks once every 24 hours whether `GeminiWatermarkTool` has a newer GitHub release and updates it automatically.

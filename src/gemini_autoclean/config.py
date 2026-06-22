@@ -20,6 +20,10 @@ class AppConfig:
     force_mode: bool = True
     tool_path: str = ""
     log_path: str = ""
+    auto_update_tool: bool = True
+    update_check_interval_hours: int = 24
+    last_tool_update_check: str = ""
+    installed_tool_version: str = ""
 
 
 def config_path() -> Path:

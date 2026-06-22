@@ -6,6 +6,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -36,18 +37,27 @@ def find_asset_url(release: dict) -> tuple[str, str]:
     raise RuntimeError(f"Release asset not found: {asset_name}")
 
 
-def ensure_tool_installed(config: AppConfig | None = None) -> Path:
+def ensure_tool_installed(config: AppConfig | None = None, *, allow_update_check: bool = True) -> Path:
     config = config or load_config()
     tool_path = Path(config.tool_path)
-    if tool_path.exists():
+    if tool_path.exists() and not should_check_for_updates(config, allow_update_check):
         ensure_global_shim(tool_path)
         return tool_path
 
     release = fetch_latest_release()
     asset_name, url = find_asset_url(release)
+    release_version = release.get("tag_name", "")
     install_dir = app_data_dir() / "bin"
     install_dir.mkdir(parents=True, exist_ok=True)
     archive_path = app_data_dir() / asset_name
+    current_version = current_tool_version(tool_path)
+
+    if tool_path.exists() and current_version and current_version == release_version:
+        config.installed_tool_version = current_version
+        mark_update_check(config)
+        save_config(config)
+        ensure_global_shim(tool_path)
+        return tool_path
 
     download_file(url, archive_path)
     extract_archive(archive_path, install_dir)
@@ -63,9 +73,50 @@ def ensure_tool_installed(config: AppConfig | None = None) -> Path:
         tool_path.chmod(tool_path.stat().st_mode | stat.S_IEXEC)
 
     config.tool_path = str(tool_path)
+    config.installed_tool_version = release_version or current_tool_version(tool_path)
+    mark_update_check(config)
     save_config(config)
     ensure_global_shim(tool_path)
     return tool_path
+
+
+def current_tool_version(tool_path: Path) -> str:
+    if not tool_path.exists():
+        return ""
+    try:
+        result = subprocess.run(
+            [str(tool_path), "--version"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return ""
+    if result.returncode != 0:
+        return ""
+    output = (result.stdout or "").strip().splitlines()
+    if not output:
+        return ""
+    version = output[-1].strip()
+    if version and not version.startswith("v"):
+        return f"v{version}"
+    return version
+
+
+def should_check_for_updates(config: AppConfig, allow_update_check: bool) -> bool:
+    if not allow_update_check or not config.auto_update_tool:
+        return False
+    if not config.last_tool_update_check:
+        return True
+    try:
+        last_check = datetime.fromisoformat(config.last_tool_update_check)
+    except ValueError:
+        return True
+    return datetime.now(timezone.utc) >= last_check + timedelta(hours=config.update_check_interval_hours)
+
+
+def mark_update_check(config: AppConfig) -> None:
+    config.last_tool_update_check = datetime.now(timezone.utc).isoformat()
 
 
 def download_file(url: str, destination: Path) -> None:
