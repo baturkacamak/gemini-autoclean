@@ -7,7 +7,7 @@
 - Auto-downloads the correct `GeminiWatermarkTool` build for Windows, Linux, or macOS
 - Installs a global shim so `GeminiWatermarkTool` is callable from any terminal
 - Watches the default Downloads folder by default
-- Lets users override the source directory and target directory
+- Lets users override one or more source directories and the target directory
 - Matches files by configurable filename patterns such as `Gemini_Generated_Image_*`
 - Removes the original file after a successful clean
 - Installs autostart on Windows, Linux, and macOS
@@ -56,6 +56,7 @@ After `setup`, the watcher is configured for startup and also launched for the c
 Default behavior:
 
 - watch: your default Downloads directory
+- or multiple watched directories if you configure more than one source
 - clean target: `Downloads/Gemini`
 - filename pattern: `Gemini_Generated_Image_*`
 
@@ -63,10 +64,12 @@ Default behavior:
 
 ```bash
 gemini-autoclean setup --source ~/Downloads --target ~/Downloads/Gemini
+gemini-autoclean setup --source ~/Downloads --source /mnt/archive/Downloads --target ~/Downloads/Gemini
 gemini-autoclean setup --pattern Gemini_Generated_Image_* --pattern My_Custom_Prefix_*
 gemini-autoclean install-tool
 gemini-autoclean install-service
 gemini-autoclean update-config --pattern Another_Prefix_*
+gemini-autoclean update-config --source G:\DOWNLOADS --source C:\Users\me\Downloads
 gemini-autoclean watch --once
 gemini-autoclean print-config --json
 ```
@@ -81,6 +84,7 @@ Main fields:
 
 - `source_dir`
 - `target_dir`
+- `source_dirs`
 - `patterns`
 - `extensions`
 - `poll_seconds`

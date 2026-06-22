@@ -17,20 +17,20 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     setup_parser = subparsers.add_parser("setup", help="Install tool, write config, and install autostart")
-    setup_parser.add_argument("--source")
+    setup_parser.add_argument("--source", action="append", dest="sources")
     setup_parser.add_argument("--target")
     setup_parser.add_argument("--pattern", action="append", dest="patterns")
     setup_parser.add_argument("--no-service", action="store_true")
 
     tool_parser = subparsers.add_parser("install-tool", help="Download and install GeminiWatermarkTool")
-    tool_parser.add_argument("--source")
+    tool_parser.add_argument("--source", action="append", dest="sources")
     tool_parser.add_argument("--target")
     tool_parser.add_argument("--pattern", action="append", dest="patterns")
 
     subparsers.add_parser("install-service", help="Install autostart for the watcher")
 
     update_parser = subparsers.add_parser("update-config", help="Update source, target, or filename patterns")
-    update_parser.add_argument("--source")
+    update_parser.add_argument("--source", action="append", dest="sources")
     update_parser.add_argument("--target")
     update_parser.add_argument("--pattern", action="append", dest="patterns")
 
@@ -44,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def cmd_setup(args: argparse.Namespace) -> int:
-    config = setup_install(args.source, args.target, args.patterns)
+    config = setup_install(args.sources, args.target, args.patterns)
     if not args.no_service:
         launcher = install_autostart()
         print(f"Autostart installed: {launcher}")
@@ -53,7 +53,7 @@ def cmd_setup(args: argparse.Namespace) -> int:
         start_watcher_now()
         print("Watcher started for the current session.")
     print(f"Tool path: {config.tool_path}")
-    print(f"Watch source: {config.source_dir}")
+    print(f"Watch sources: {', '.join(config.source_dirs)}")
     print(f"Clean target: {config.target_dir}")
     print(f"Patterns: {', '.join(config.patterns)}")
     if current_os() != "windows" and str(user_bin_dir()) not in subprocess.getoutput("echo $PATH"):
@@ -62,9 +62,13 @@ def cmd_setup(args: argparse.Namespace) -> int:
 
 
 def cmd_install_tool(args: argparse.Namespace) -> int:
+    source_overrides = {}
+    if args.sources:
+        source_overrides["source_dir"] = args.sources[0]
+        source_overrides["source_dirs"] = args.sources
     config = ensure_config(
         {
-            "source_dir": args.source,
+            **source_overrides,
             "target_dir": args.target,
             "patterns": args.patterns,
         }
@@ -83,14 +87,18 @@ def cmd_install_service(_: argparse.Namespace) -> int:
 
 
 def cmd_update_config(args: argparse.Namespace) -> int:
+    source_overrides = {}
+    if args.sources:
+        source_overrides["source_dir"] = args.sources[0]
+        source_overrides["source_dirs"] = args.sources
     config = ensure_config(
         {
-            "source_dir": args.source,
+            **source_overrides,
             "target_dir": args.target,
             "patterns": args.patterns,
         }
     )
-    print(f"Updated config: {config.source_dir} -> {config.target_dir}")
+    print(f"Updated config: {', '.join(config.source_dirs)} -> {config.target_dir}")
     print(f"Patterns: {', '.join(config.patterns)}")
     return 0
 

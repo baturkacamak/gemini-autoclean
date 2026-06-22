@@ -10,7 +10,8 @@ from .paths import app_config_dir, app_data_dir, default_downloads_dir
 @dataclass
 class AppConfig:
     source_dir: str
-    target_dir: str
+    target_dir: str = ""
+    source_dirs: list[str] = field(default_factory=list)
     patterns: list[str] = field(default_factory=lambda: ["Gemini_Generated_Image_*"])
     extensions: list[str] = field(default_factory=lambda: [".png", ".jpg", ".jpeg", ".webp"])
     poll_seconds: int = 4
@@ -35,6 +36,7 @@ def default_config() -> AppConfig:
     data_dir = app_data_dir()
     return AppConfig(
         source_dir=str(downloads),
+        source_dirs=[str(downloads)],
         target_dir=str(downloads / "Gemini"),
         tool_path=str(data_dir / "bin" / tool_binary_name()),
         log_path=str(data_dir / "gemini-autoclean.log"),
@@ -55,6 +57,7 @@ def ensure_config(overrides: dict | None = None) -> AppConfig:
         for key, value in overrides.items():
             if value is not None:
                 setattr(config, key, value)
+    normalize_sources(config)
     save_config(config)
     return config
 
@@ -64,10 +67,22 @@ def load_config() -> AppConfig:
     if not path.exists():
         return ensure_config()
     data = json.loads(path.read_text(encoding="utf-8"))
-    return AppConfig(**data)
+    config = AppConfig(**data)
+    normalize_sources(config)
+    return config
 
 
 def save_config(config: AppConfig) -> None:
+    normalize_sources(config)
     path = config_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(asdict(config), indent=2), encoding="utf-8")
+
+
+def normalize_sources(config: AppConfig) -> None:
+    normalized = [source for source in config.source_dirs if source]
+    if not normalized and config.source_dir:
+        normalized = [config.source_dir]
+    if normalized:
+        config.source_dirs = list(dict.fromkeys(normalized))
+        config.source_dir = config.source_dirs[0]

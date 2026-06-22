@@ -177,10 +177,11 @@ def ensure_python_invocation() -> str:
     return sys.executable
 
 
-def setup_install(source_dir: str | None, target_dir: str | None, patterns: list[str] | None) -> AppConfig:
+def setup_install(source_dirs: list[str] | None, target_dir: str | None, patterns: list[str] | None) -> AppConfig:
     overrides = {}
-    if source_dir:
-        overrides["source_dir"] = source_dir
+    if source_dirs:
+        overrides["source_dir"] = source_dirs[0]
+        overrides["source_dirs"] = source_dirs
     if target_dir:
         overrides["target_dir"] = target_dir
     if patterns:

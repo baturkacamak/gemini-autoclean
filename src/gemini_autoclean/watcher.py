@@ -12,7 +12,7 @@ class Watcher:
     def __init__(self, config: AppConfig) -> None:
         self.config = config
         self._seen: dict[str, str] = {}
-        self.source_dir = Path(config.source_dir)
+        self.source_dirs = [Path(source) for source in config.source_dirs]
         self.target_dir = Path(config.target_dir)
         self.log_path = Path(config.log_path)
         self.tool_path = Path(config.tool_path)
@@ -78,10 +78,11 @@ class Watcher:
         self.log(f"Skipped or failed ({result.returncode}): {path}")
 
     def scan_once(self) -> None:
-        self.source_dir.mkdir(parents=True, exist_ok=True)
-        for candidate in self.source_dir.iterdir():
-            if self.is_candidate(candidate):
-                self.process_file(candidate)
+        for source_dir in self.source_dirs:
+            source_dir.mkdir(parents=True, exist_ok=True)
+            for candidate in source_dir.iterdir():
+                if self.is_candidate(candidate):
+                    self.process_file(candidate)
 
     def watch_forever(self) -> None:
         self.log("Watcher started")
