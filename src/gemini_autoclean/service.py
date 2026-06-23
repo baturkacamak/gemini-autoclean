@@ -41,7 +41,7 @@ def install_windows_startup() -> Path:
     python = ensure_python_invocation()
     launcher.write_text(
         'Set shell = CreateObject("WScript.Shell")\n'
-        f'command = "\"{python}\" -m gemini_autoclean.cli watch"\n'
+        f'command = Chr(34) & "{python}" & Chr(34) & " -m gemini_autoclean.cli watch"\n'
         'shell.Run command, 0, False\n',
         encoding="utf-8",
     )
